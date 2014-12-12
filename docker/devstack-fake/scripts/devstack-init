@@ -40,4 +40,4 @@ if ! ( docker_has_image cirros ); then
     docker pull cirros
 fi
 
-su devstack -c '/devstack/stack.sh'
+su devstack -c 'cd /devstack && ./stack.sh'

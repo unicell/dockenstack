@@ -2,9 +2,7 @@
 # Forked from code by original author: Paul Czarkowski
 
 FROM ubuntu:trusty
-MAINTAINER Eric Windisch "ewindisch@docker.com"
-
-EXPOSE 80 5000 8773 8774 8776 9292
+MAINTAINER Qiu Yu "unicell@gmail.com"
 
 # Install Docker
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9; \
@@ -67,23 +65,22 @@ RUN apt-get install -q -y python-pip
 RUN pip install six
 
 # Install all pip requirements
-RUN pip install -r https://raw.github.com/openstack/requirements/master/global-requirements.txt
-RUN pip install -r https://raw2.github.com/openstack/tempest/master/requirements.txt
+RUN apt-get install -q -y pkg-config
+RUN apt-get install -q -y libvirt-dev
+RUN pip install -r https://raw.githubusercontent.com/openstack/requirements/master/global-requirements.txt
+RUN pip install -r https://raw.githubusercontent.com/openstack/tempest/master/requirements.txt
+
+# Workaround solving conflict between marconiclient and zaqarclient
+RUN yes | pip uninstall python-marconiclient
 
 # Pre-checkout git repos
 RUN su devstack -c '/bin/bash /opt/dockenstack/bin/openstack-git-checkout'
 
 RUN git clone https://github.com/stackforge/nova-docker /opt/stack/nova-docker
-WORKDIR /opt/stack/nova-docker
-RUN cp contrib/devstack/extras.d/70-docker.sh /devstack/extras.d/; \
-    cp contrib/devstack/lib/nova_plugins/hypervisor-docker /devstack/lib/nova_plugins/;
-
-WORKDIR /devstack
-ADD localrc /devstack/localrc
-ADD localrc.d /devstack/localrc.d
+#  WORKDIR /opt/stack/nova-docker
+#  RUN cp contrib/devstack/extras.d/70-docker.sh /devstack/extras.d/; \
+    #  cp contrib/devstack/lib/nova_plugins/hypervisor-docker /devstack/lib/nova_plugins/;
 
 WORKDIR /
 # Fix ownership of all files
 RUN chown -R devstack /devstack
-
-CMD ["/opt/dockenstack/bin/start"]

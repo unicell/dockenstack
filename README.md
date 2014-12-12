@@ -1,58 +1,62 @@
 # Openstack on Docker
 
-Dockenstack builds an image for running OpenStack's devstack development and testing environment inside of a Docker container. This image currently supports running the docker and libvirt-lxc virtualization drivers for Nova. KVM/Qemu support is being tested.
+This is a fork of ewindisch/dockenstack project for building DevStack with Docker. Unlike the original project, which is focusing on nova-docker CI testing with OpenStack trunk, this fork is trying to:
 
-Using dockenstack, developers may quickly iterate changes in a container and locally invoke functional tests without needing to first submit their changes for code-review.
+* Ease the burden of DevStack setup. Consume less time and generate consistent ready-to-use environment.
+* Easy to switch DevStack environment with different configuration setup. This is because of Docker's container nature.
+* Never mess up with your local dev environment.
+
+Dockenstack contains Docker artifacts to build images for DevStack environment. As of now it contains fake driver and single node setup, which is generally enough for OpenStack control plane dev and test purpose. More setup configurations are also in the plan.
+
+* single node setup with fake virt driver, nova-network (unicell/devstack-fake)
+
+## TODO
+
+* single node setup with other virt driver options
+* multi node setup
+* cell setup
+* neutron setup with SDN controller included
 
 The quick iteration cycle of dockenstack versus other local environments (such as devstack-vagrant) is accomplished by precaching and preinstalling most or all network resources and OS packages. This speeds up running the container and, when running many, eliminates the problems that might result from offline or rate-limited apt and pip services.
 
-Users may expect dockenstack to take 2-4 minutes on a fast machine from "docker run" through having an operational OpenStack installation.
+Users may expect dockenstack to take 5-10 minutes on a fast machine from "docker run" through having an operational OpenStack installation.
 
 # Build & Run
 
-## Trusted Build from index.docker.io
+## Tryout with prebuilt image from Docker Hub public registry
 
-This leverages our "Trusted Build" process and daily-build system.
-
-```
-docker run -privileged -t -i ewindisch/dockenstack
-```
-
-## Self built
-
-WARNING: This takes a while.
+Run following command to start DevStack env with default setup. First time run requires additional time to pull down image from the repository.
 
 ```
-git clone https://github.com/ewindisch/dockenstack.git
+docker run --privileged -t -i unicell/devstack-fake
+```
+
+## Build your own image
+
+WARNING: This takes a while. (~30 minutes)
+
+devstack-base is the one contains all the prebuilt packages, code repos, 3rd party libraries. For building an image with only DevStack's own localrc changed, one can skip the base image, and simply build dependent images.
+
+```
+git clone https://github.com/unicell/dockenstack.git
 cd dockenstack
-docker build -t ewindisch/dockenstack dockenstack
-docker run -privileged -t -i dockenstack
+docker build -t unicell/devstack-base docker/devstack-base
 ```
 
-# Using OpenStack
+```
+docker build -t unicell/devstack-fake docker/devstack-fake
+docker run --privileged -t -i unicell/devstack-fake
+```
+
+# Using DevStack
 
 If you've started dockenstack interactively without extra arguments, you'll end up with a shell and can run these steps immediately.
 
 ```
-source /devstack/openrc
-nova boot --image docker-busybox:latest --flavor 1 test
+source /devstack/openrc admin admin
+nova boot --flavor 84 --image cirros-0.3.2-x86_64-uec test
 nova list
-docker ps
 ```
-
-A future version of this README will explain how to use the OpenStack installation from outside of the dockenstack container.
-
-# Running Tempest
-
-Launch the container as such:
-
-```
-docker run -privileged -t -i ewindisch/dockenstack /usr/local/bin/run-tempest
-```
-
-Running Tempest in Dockenstack may take approximately 30 minutes.
-
-Arguments to run-tempest may be passed, the arguments are the same as run_tempest.sh (see Tempest documentation / source)
 
 # Environment Variables
 
@@ -66,6 +70,7 @@ Dockenstack should understand all of the devstack environment variables.
 
 # Authors
 
+* Qiu Yu <unicell@gmail.com>
 * Eric Windisch <ewindisch@docker.com>
 * Paul Czarkowski
 

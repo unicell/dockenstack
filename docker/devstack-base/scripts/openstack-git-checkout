@@ -8,4 +8,7 @@ cd /devstack
 BM_POSEUR_REPO=https://github.com/tripleo/bm_poseur
 BM_POSEUR_DIR=/opt/stack/bm_poseur
 
+# Workaround for HEAT_TEMPLATE_DIR resolved to /template
+HEAT_CONF_DIR=/opt/stack
+
 cat <(echo ". functions; . stackrc") <(for project in $(declare | sed -n '/_REPO=/{ s/^\(.*\)_REPO=.*/\1/; p; }'); do eval "echo git_clone \$${project}_REPO $(git grep -h ${project}_DIR= | sed 's/.*=//') \$${project}_BRANCH \|\| :";  done | grep git.openstack.org) | bash

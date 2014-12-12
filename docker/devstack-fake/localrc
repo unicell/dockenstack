@@ -22,7 +22,7 @@ HOST_IP_IFACE=eth0
 IMAGE_URLS=
 DEFAULT_IMAGE_NAME=cirros
 
-VIRT_DRIVER=docker
+VIRT_DRIVER=fake
 
 # Include ".d" directory
 for script in /devstack/localrc.d/*; do

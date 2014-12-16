@@ -21,34 +21,13 @@ The quick iteration cycle of dockenstack versus other local environments (such a
 
 Users may expect dockenstack to take 5-10 minutes on a fast machine from "docker run" through having an operational OpenStack installation.
 
-# Build & Run
+# Use
 
-## Tryout with prebuilt image from Docker Hub public registry
-
-Run following command to start DevStack env with default setup. First time run requires additional time to pull down image from the repository.
+* start DevStack env with default setup
 
 ```
 docker run --privileged -t -i unicell/devstack-fake
 ```
-
-## Build your own image
-
-WARNING: This takes a while. (~30 minutes)
-
-devstack-base is the one contains all the prebuilt packages, code repos, 3rd party libraries. For building an image with only DevStack's own localrc changed, one can skip the base image, and simply build dependent images.
-
-```
-git clone https://github.com/unicell/dockenstack.git
-cd dockenstack
-docker build -t unicell/devstack-base docker/devstack-base
-```
-
-```
-docker build -t unicell/devstack-fake docker/devstack-fake
-docker run --privileged -t -i unicell/devstack-fake
-```
-
-# Using DevStack
 
 If you've started dockenstack interactively without extra arguments, you'll end up with a shell and can run these steps immediately.
 
@@ -57,6 +36,41 @@ source /devstack/openrc admin admin
 nova boot --flavor 84 --image cirros-0.3.2-x86_64-uec test
 nova list
 ```
+
+* build wheel cache for OpenStack development use
+
+Without REQUIREMENTS_BRANCH env variable specified, unicell/wheel-cache will build requirements cache for master branch.
+
+```
+docker run -t -i -e REQUIREMENTS_BRANCH=stable/juno -v /home/qiuyu/wheelhouse/:/wheelhouse unicell/wheel-cache
+```
+
+# Build
+
+* devstack-base
+
+devstack-base is the one contains all the prebuilt packages, code repos, 3rd party libraries. For building an image with only DevStack's own localrc changed, one can skip the base image, and simply build dependent images.
+
+WARNING: This takes a while. (~30 minutes)
+
+```
+git clone https://github.com/unicell/dockenstack.git
+cd dockenstack
+docker build -t unicell/devstack-base docker/devstack-base
+```
+
+* devstack-fake
+
+devstack with fake driver and nova-network all-in-one setup
+
+```
+docker build -t unicell/devstack-fake docker/devstack-fake
+docker run --privileged -t -i unicell/devstack-fake
+```
+
+* wheel-cache
+
+Image to populate wheel cache for development use
 
 # Environment Variables
 

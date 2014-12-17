@@ -1,0 +1,2 @@
+# stack sudoers rule
+stack	ALL=(ALL) NOPASSWD: ALL
